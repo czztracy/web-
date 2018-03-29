@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style>
+			#inputBox{
+				position: relative;
+				overflow: hidden;
+				width: 100px;
+				height: 100px;
+				background: burlywood;
+				left: 50%;
+				margin-top: 200px;
+				margin-left: -50px;
+			}
+			.user_pic{
+			  width: 20px;
+			  height: 20px;
+			  border-radius: 50%;
+			  float: right;
+			  margin-top: 40px;
+			  margin-right: 40px;
+			}
+			#input {
+				position: absolute;
+				width: 20px;
+				height: 20px;
+				opacity: 0;
+				top: 50%;
+				left: 50%;
+				margin-top: -10px;
+				margin-left: -10px;
+			}
+		</style>
+		<script src="jquery-1.8.3.min.js"></script>
+	</head>
+	<body>
+		<div id="inputBox">
+        	<input type="file" id='input' onchange="showPreview(this)"/>
+        	<img src="" class="user_pic" id="portrait">	
+        </div>
+	</body>
+	<script>
+			//图片上传
+			function showPreview(source) {
+			  var file = source.files[0];
+			  if(window.FileReader) {
+			      var fr = new FileReader();
+			      //console.log(fr);
+			      var portrait = document.getElementById('portrait');
+			      fr.onloadend = function(e) {
+			        portrait.src = e.target.result;
+			        //console.log(fr.result)
+			        
+			        var fileObj = document.getElementById('input').files[0]; // js 获取文件对象
+			       	if (typeof (fileObj) == "undefined" || fileObj.size <= 0) {
+			           	mui.toast('请选择图片', {
+					        duration: 'short',
+					        type: 'div'
+				    	});
+			           return;
+			       	}
+			       	var formFile = new FormData();
+			       	formFile.append("action", fr.result);  
+			       	formFile.append("file", fileObj); //加入文件对象
+			 
+			       	var data = formFile ;
+			       	$.ajax({
+			           	url: '' + Host1 + '/uploadApp?type=sol',
+			           	data: data,
+			           	type: "POST",
+			           	dataType: "json",
+			           	cache: false,//上传文件无需缓存
+			           	processData: false,//用于对data参数进行序列化处理 这里必须false
+			           	contentType: false, //必须
+			           	success: function (res) {
+			           		var str = res.result.fileurl;
+			           		var str1 = str.substring(1, str.length-1)
+			           		var imgUrl = str1.split("=")[1]
+			           		//console.log(imgUrl)
+			           		localStorage.imgUrl = imgUrl;
+			           		mui.toast('上传成功！', {
+						        duration: 'short',
+						        type: 'div'
+						    });
+			           	},
+			           	error: function(xhr, type, errorThrown) {
+					  	//异常处理；
+					     	mui.toast(type, {
+					        	duration: 'short',
+					        	type: 'div'
+					      	});
+					  	}
+			       	}) 
+			      };
+			      fr.readAsDataURL(file);
+			      portrait.style.display = 'block';
+			  }
+			  //console.log(document.getElementById('input').value)
+			}
+	</script>
+</html>
